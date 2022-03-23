@@ -1,0 +1,319 @@
+---
+title: "Verteilungszoo"
+author: "Marco"
+runtime: shiny
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(shiny)
+
+```
+# Diskrete Verteilungen
+
+## Bernoulli-Verteilung
+
+Modellvorstellung: Münze einmal werfen.
+
+```{r echo=F}
+library(shiny)
+library(shinydashboard)
+
+ui <- dashboardPage(
+  dashboardHeader(title = "Verteilungszoo"),
+  dashboardSidebar(
+    sidebarMenu(
+      menuItem("Bernoulliverteilung", tabName = "Bernoulli", icon = icon("th")),
+      menuItem("Binomialverteilung", tabName = "Binomial", icon = icon("th")),
+      menuItem("geometrische Verteilung", tabName = "geometrisch", icon = icon("th")),
+      menuItem("Poissonverteilung", tabName = "Poisson", icon = icon("th")),
+      menuItem("hypergeometrische Verteilung", tabName = "Hypergeometrisch", icon = icon("th")),
+      menuItem("diskrete Uniformverteilung", tabName = "diskrete", icon = icon("th")),
+      menuItem("Exponentialverteilung", tabName = "exponential", icon = icon("th")),
+      menuItem("Normalverteilung", tabName = "normal", icon = icon("th")),
+      menuItem("Student t-Verteilung", tabName = "student", icon = icon("th"))
+    )
+  ),
+  
+  dashboardBody(
+    tabItems(
+      # Bernoulli-Verteilung
+      tabItem("Bernoulli",
+      # Boxes need to be put in a row (or column)
+        fluidRow(
+          box(
+            title = "Parameter",
+            sliderInput('pi', 'Erfolgswahrschienlichkeit',
+                min = 0, max = 1, value = 0.5, step = 0.01)),
+          box(plotOutput("plotbernoulli"))
+        )
+      ),
+      
+      # Binomialverteilung
+      tabItem("Binomial",
+        fluidRow(
+          box(
+            title = "Parameter",
+            sliderInput('binn', 'Anzahl Versuche',
+                        min = 1, max = 100, value = 10),
+            sliderInput('binpi', 'Erfolgswahrscheinlichkeit',
+                        min = 0, max = 1, step = 0.01, value = 0.5),
+            checkboxInput('binnorm', 'Normiert?')
+          ),
+          box(plotOutput("plotbinomial"))
+        )
+      ),
+      
+      # geometrische Verteilung
+      tabItem("geometrisch",
+        fluidRow(
+          box(
+            title = "Parameter",
+            sliderInput('geompi', 'Erfolgswahrscheinlichkeit',
+              min = 0, max = 1, value = 0.20),
+            checkboxInput('geomnorm', 'Normieren?')
+          ),
+          box(plotOutput("plotgeometrisch"))
+        )
+      ),
+      
+      # Poisson-Verteilung
+      tabItem("Poisson",
+        fluidRow(
+          box(
+            title = "Parameter",
+            sliderInput('poilambda', 'Erwartungswert',
+                min = 0, max = 50, value = 3),
+            checkboxInput('poinorm', 'Normieren?')
+          ),
+          box(plotOutput("plotpoisson"))
+        )
+      ),
+      
+      # hypergeometrische Verteilung
+      tabItem("Hypergeometrisch",
+        fluidRow(
+          box(
+            title = "Parameter",
+            sliderInput('hypN', 'Anzahl Kugeln',
+                min = 1, max = 100, value = 10),
+            sliderInput('hypn', 'Anzahl gezogener Kugeln',
+                min = 1, max = 10, value = 5),
+            sliderInput('hypm', 'Anzahl markierter Kugeln',
+                min = 0, max = 100, value = 5),
+            checkboxInput('hypnorm', 'Normieren?')
+          ),
+          box(plotOutput("plothyper"))
+        )
+      ),
+      
+      # diskrete Uniformverteilung
+      tabItem("diskrete",
+        fluidRow(
+          box(
+            title = "Parameter",
+            sliderInput('range', 'gleichmässig verteilt zwischen?',
+                min = -100, max = 100, value = c(0, 10)),
+            checkboxInput('disnorm', 'Normiert?')
+          ),
+          box(plotOutput("plotdis"))
+        )
+      ),
+      
+      # Exponential-Verteilung
+      tabItem("exponential",
+        fluidRow(
+          box(
+            title = "Parameter",
+            sliderInput('explambda', "\u03BB",
+                min = 0, max = 2, value = 1, step = 0.05),
+            numericInput('expa', 'a', min = 0, max = 10, value = 0, step = 0.01),
+            numericInput('expb', 'b', min = 0, max = 10, value = 1, step = 0.01),
+            checkboxInput('expnorm', 'x Achse auf 10 normieren')
+          ),
+          box(plotOutput("expplot")),
+          box(verbatimTextOutput("exptext"))
+        )
+      ),
+      
+      # Normalverteilung
+      tabItem("normal",
+        fluidRow(
+          box(
+            title = "Parameter",
+            sliderInput('normmu', "\u03BC",
+                min = -50, max = 50, value = 0, step = 0.5),
+            sliderInput('normsd', "\u03C3",
+                min = 0, max = 20, value = 1, step = 0.1),
+            numericInput('norma', 'a', min = -100, max = 100, value = 0, step = 0.001),
+            numericInput('normb', 'b', min = -100, max = 100, value = 0, step = 0.001),
+            checkboxInput('normnorm', 'x-Achse normieren?')
+          ),
+          box(plotOutput("normplot")),
+          box(verbatimTextOutput("normtext"))
+        )
+      ),
+      
+      # Student t-Verteilung
+      tabItem("student",
+        fluidRow(
+          box(
+            title = "Parameter",
+            sliderInput('studentn', 'Freiheitsgrade',
+                min = 1, max = 50, value = 10, step = 1),
+            checkboxInput('studentnorm', 'Normalverteilung einblenden?'),
+            numericInput('studenta', 'a', min = -20, max = 20, value = 0, step = 0.001),
+            numericInput('studentb', 'b', min = -20, max = 20, value = 0, step = 0.001)
+          ),
+          box(plotOutput("studentplot")),
+          box(verbatimTextOutput("studenttext"))
+        )
+      )
+    )
+  )
+)
+
+server <- function(input, output, session) {
+  # plot für Bernoulli-Verteilung
+  output$plotbernoulli <- renderPlot({
+    d.bernoulli <- dbinom(x=c(0,1), size=1, prob = input$pi)
+    barplot(d.bernoulli, names.arg = c(0,1), ylim = c(0,1),
+        main = 'Bernoulli', ylab = 'Wahrscheinlichkeit')
+  })
+  
+  # plot für Binomialverteilung
+  output$plotbinomial <- renderPlot({
+    x <- 0:input$binn
+    d.binom <- dbinom(x, size=input$binn, prob = input$binpi)
+    if(input$binnorm){
+      c <- 1}
+    else{
+      c <- 1.1*max(d.binom)}
+    barplot(d.binom, names.arg = x, ylim = c(0,c),
+        main = 'Binomial', ylab = 'Wahrscheinlichkeit')
+  })
+  
+  # plot für geometrische Verteilung
+  output$plotgeometrisch <- renderPlot({
+    x = 1:floor(1+log(1/100, base = 1-input$geompi))
+    d.geom1 <- dgeom(x-1, prob = input$geompi)
+    if(input$geomnorm){
+      c <- 1
+    }
+    else{
+      c <- input$geompi
+    }
+    barplot(d.geom1, names.arg = x, ylim = c(0,c),
+            main = 'geometrische Verteilung', ylab = 'Wahrscheinlichkeit')
+  })
+  
+  # plot für Poisson Verteilung
+  output$plotpoisson <- renderPlot({
+    x <- 0:(3*input$poilambda)
+    d.pois <- dpois(x, lambda = input$poilambda)
+    if(input$poinorm){
+      c <- 1
+    }
+    else{
+      c <- 1.1*max(d.pois)
+    }
+    barplot(d.pois, names.arg = x, ylim = c(0, c),
+            main = 'Poisson-Verteilung', ylab = 'Wahrscheinlichkeit')
+  })
+  
+  # plot für Hypergeometrische Verteilung
+  observe({
+    val <- input$hypN
+    updateSliderInput(session, 'hypn', max = val)
+    updateSliderInput(session, 'hypm', max = val)
+    output$plothyper <- renderPlot({
+      x <- 0:min(input$hypm, input$hypn)
+      d.hyper <- dhyper(x, m = input$hypm, n = input$hypN - input$hypm, k = input$hypn)
+      if(input$hypnorm){
+        c <- 1
+      }
+      else{
+        c <- 1.1*max(d.hyper)
+      }
+      barplot(d.hyper, names.arg = x, 
+              ylim = c(0, c),
+              main = 'hypergeometrische Verteilung', ylab = 'Wahrscheinlichkeit')
+    })
+  })
+  
+  #plot für diskrete Uniformverteilung
+  output$plotdis <- renderPlot({
+    p <- 1/(input$range[2]-input$range[1]+1)
+    d.uni <- rep(p, 1/p)
+    if(input$disnorm){
+      c <- 1
+    }
+    else{
+      c <- 1.1*p
+    }
+    barplot(d.uni, ylim = c(0, c), names.arg = input$range[1]:input$range[2],
+            main = 'diskret uniforme Verteilung', ylab = 'Wahrscheinlichkeit')
+  })
+  
+  # plot für Exponentialverteilung
+  output$expplot <- renderPlot({
+    if(input$expnorm){
+      upperbound <- 10
+    }
+    else{
+      upperbound <- qexp(0.99, rate = input$explambda)
+    }
+    x <- seq(0, upperbound, by = 0.01)
+    d.exp <- dexp(x, rate = input$explambda)
+    plot(x, d.exp, xlab = 'x', type = 'l', 
+            main = 'Exponential-Verteilung', ylab = 'Dichte')
+    polygon(c(input$expa, x[x>=input$expa & x<=input$expb], input$expb),
+            c(0, d.exp[x>= input$expa & x <= input$expb], 0), col = 'seagreen1')
+  })
+  output$exptext <- renderText({
+    paste('P(', input$expa ,'< X <',input$expb, ')=', 
+          pexp(input$expb, rate = input$explambda) - pexp(input$expa, rate = input$explambda))
+  })
+  
+  # plot für Normalverteilung
+   output$normplot <- renderPlot({
+    if(input$normnorm){
+      x <- seq(-40, 40, by = 0.01)
+    }
+    else{
+      x <- seq(round(qnorm(0.01, mean = input$normmu, sd = input$normsd), digits = 2), 
+               round(qnorm(0.99, mean = input$normmu, sd = input$normsd), digits = 2), by = 0.001)
+    }
+    d.norm <- dnorm(x, mean = input$normmu, sd = input$normsd)
+    plot(x, d.norm, xlab = 'x', type = 'l', 
+            main = 'Normalverteilung', ylab = 'Dichte')
+    polygon(c(input$norma, x[x >= input$norma & x <= input$normb], input$normb), 
+            c(0, d.norm[x >= input$norma & x <= input$normb], 0), col = 'seagreen1')
+  })
+  output$normtext <- renderText({
+    paste('P(', input$norma ,'< X <',input$normb, ')=', pnorm(input$normb, mean = input$normmu, sd = input$normsd) -
+            pnorm(input$norma, mean = input$normmu, sd = input$normsd))
+  })
+  
+  # plot für Student t-Verteilung
+  output$studentplot <- renderPlot({
+    x <- seq(round(qt(0.01, df = input$studentn), digits = 2), 
+              round(qt(0.99, df = input$studentn), digits = 2), by = 0.001)
+    d.t <- dt(x, df = input$studentn)
+    plot(x, d.t, xlab = 'x', type = 'l', 
+         main = 'Student t-Verteilung', ylab = 'Dichte',
+         ylim = c(0,0.41))
+    polygon(c(input$studenta, x[x >= input$studenta & x <= input$studentb], input$studentb), 
+            c(0, d.t[x >= input$studenta & x <= input$studentb], 0), col = 'seagreen1')
+    if(input$studentnorm){
+      lines(x, dnorm(x), col = 'red')
+    }
+  })
+  output$studenttext <- renderText({
+    paste('P(', input$studenta ,'< X <',input$studentb, ')=', pt(input$studentb, df = input$studentn) -
+            pt(input$studenta, df = input$studentn))
+  })
+}
+
+shinyApp(ui, server, options = list(height = 1000))
+```
