@@ -1,3 +1,0 @@
-source("supporting.r")
-
-swiss_covid <- prep_data()

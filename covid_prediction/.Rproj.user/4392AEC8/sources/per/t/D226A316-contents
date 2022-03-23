@@ -1,0 +1,35 @@
+library(ggplot2)
+
+source("supporting.r")
+
+swiss_covid <- prep_data()
+
+swiss_covid$log_entries <- log(swiss_covid$entries)
+
+swiss_covid$deseasonazied <- 
+
+swiss_covid %>%
+  ggplot(aes(x=datum, y=log_entries)) +
+  geom_line()
+
+swiss_covid <- swiss_covid %>%
+  #group_by(weekday) %>%
+  mutate(normalized=log_entries/mean(log_entries))
+
+swiss_covid$normalized <- swiss_covid$log_entries/mean(swiss_covid$log_entries)
+
+tail(swiss_covid)
+
+aggregate(swiss_covid$log_entries, list(swiss_covid$weekday), FUN=mean)
+
+
+swiss_covid %>%
+  ggplot() +
+  #geom_line(aes(x=datum, y=normalized), col="darkseagreen") +
+  geom_line(aes(x=datum, y=deseasoned), col="purple")
+
+swiss_covid$index <- 1:nrow(swiss_covid)
+
+loessMod10 <- loess(deseasoned ~ index, data=swiss_covid, span = 0.10)
+
+predict(loessMod10, 759)
