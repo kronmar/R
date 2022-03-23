@@ -1,0 +1,27 @@
+{
+    "id": "094A8DAD",
+    "path": "F:/Nextcloud/GitRepos/R/covid_prediction/ui.r",
+    "project_path": "ui.r",
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1648032114302.0,
+    "source_on_save": false,
+    "relative_order": 4,
+    "properties": {
+        "tempName": "Untitled1",
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "37,35",
+        "scrollLine": "0"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1648032178,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1648032178254,
+    "read_only": false,
+    "read_only_alternatives": []
+}
