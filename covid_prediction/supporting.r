@@ -5,7 +5,7 @@ library(stringr)
 # Define the function to prepare the data
 prep_data <- function(){
   # IN:  
-  # OUT: data frame with day, day of the week, and the number of reported cases 
+  # OUT: data frame with day, day of the week, and the number of reported cases, and the log of these cases
   
   url <- get_url()
   data <- url %>%
@@ -26,6 +26,9 @@ prep_data <- function(){
   if(tail(data$entries, 1) < 0.1 * mean(tail(data$entries, 7))){
     data <- head(data, -1)
   }
+  
+  # add log data
+  data$logEntries <- log(data$entries)
   
   return(data)
 }
