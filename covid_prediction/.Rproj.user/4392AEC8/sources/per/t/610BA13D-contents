@@ -1,0 +1,78 @@
+source("supporting.r")
+library(ggplot2)
+
+swiss_covid <- load_data()
+
+blub <- swiss_covid[-1,]
+
+swiss_covid %>%
+  ggplot() +
+  geom_point(aes(x = datum, y = logEntries), color = "purple") +
+  geom_point(aes(x = datum, y = deseasoned), color = "darkseagreen")
+
+# hyperparameter tuning: span
+swiss_covid_shuffled <- prep_data(swiss_covid)
+
+rmseList <- c()
+spanList <- seq(1, 21, 1)/763
+
+# 5-fold cv
+for(i in  1:5){
+  # define the indices for train/test split
+  indices <- which(folds == i, arr.ind = T)
+  
+  train_fold <- shuffledData[-indices,]
+  
+  test_fold <- shuffledData[indices,] 
+  
+  for(span in spanList){
+    # fit model
+    loessMod <- loess(deseasoned ~ index, data = train_fold, span = span, 
+                      control = loess.control(surface = "direct"))
+    
+    # predict on test_fold
+    pred <- unname(predict(loessMod, test_fold))
+    
+    # calculate RMSE and save
+    rmseList <- append(rmseList, sqrt(mean((pred-test_fold$deseasoned)^2)))
+  }
+}
+
+spanOpt <- tune_span(swiss_covid_shuffled)
+
+meanDf <- resultDf %>% group_by(span) %>% summarise_at(vars(rmse), list(mean))
+
+meanDf$span[which.min(meanDf$rmse)]
+
+loessMod <- loess(deseasoned ~ index, swiss_covid, span = 29/763, control = loess.control(surface = "direct"))
+loessMod$fitted
+
+data.frame(datum = swiss_covid$datum, obs = swiss_covid$deseasoned, mod = loessMod$fitted) %>%
+  filter(datum >= "2022-01-01") %>%
+  ggplot() +
+  geom_line(aes(x = datum, y = mod)) +
+  geom_point(aes(x = datum, y = obs))
+
+modOut <- predict(loessMod, 764)
+
+dailyMean <- swiss_covid %>% filter(weekday == weekdays(tail(swiss_covid$datum, 1) + 1)) %>%
+  select(deseasoned) %>%
+  pull() %>%
+  mean()
+
+totMean <- swiss_covid %>%
+  select(deseasoned) %>%
+  pull() %>%
+  mean()
+
+exp(modOut - totMean + dailyMean)
+
+url <- get_url()
+data <- url %>%
+  read.csv %>%
+  filter(geoRegion == "CHFL")
+
+names(data)
+tail(data$sumTotal)
+tail(diff(data$sumTotal, lag=1))
+55+172+358+7153+9343+17
