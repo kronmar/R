@@ -9,6 +9,8 @@ server <- function(input, output) {
   swiss_covid <- load_data()
   # and prepare for later
   swiss_covid_prepared <- prep_data(swiss_covid, numFolds = 10)
+  #updateSliderInput(session, loessSpanRange)
+  #updateSliderInput(session, loessSpan)
   # calculate the optimumSpan for the LOESS modell
   optSpan <- tune_span(swiss_covid_prepared, numFolds = 10, minDaysSpan = 5, maxDaysSpan = 30)
   
@@ -40,23 +42,33 @@ server <- function(input, output) {
     
     return(weekdayPlot)
   })
+
   
   output$loessPlot <- renderPlot({
     # 
-    # calculate a new loess modell with the optimum span found previously
-    loessMod <- loess(deseasoned ~ index, data = head(swiss_covid, nrow(swiss_covid)-1), span = optSpan/nrow(swiss_covid), 
+    # calculate a new loess modell with chosen span. Also remove the two last days, as their data might not be complete yet
+    loessMod <- loess(deseasoned ~ index, data = head(swiss_covid, nrow(swiss_covid)-2), span = input$loessSpan/nrow(swiss_covid), 
                       control = loess.control(surface = "direct"))
     
-    # predict the value for the following day
-    predLogValue <- predict(loessMod, nrow(data)+1)
-    predValue <- seasonalize(predLogValue, date = tail(swiss_covid$datum)+1, data=swiss_covid)
+    # predict the value for the following day - or following three days for weekends
+    if(weekdays(tail(swiss_covid$datum, 1)) != "Donnerstag"){
+      predLogValue <- predict(loessMod, nrow(swiss_covid)+1)
+      predValue <- seasonalize(predLogValue, date = tail(swiss_covid$datum)+1, data=swiss_covid)
+    }
+    else{
+      predLogValue <- predict(loessMod, 1:3 + nrow(swiss_covid))
+      predValue = 0
+      for(val in predLogValue){
+        predValue <- predValue + seasonalize(val, date = tail(swiss_covid$datum)+1, data=swiss_covid)
+      }
+    }
     # plot
     loessPlot <- data.frame(datum = swiss_covid$datum, obs = swiss_covid$deseasoned, mod = predict(loessMod, 1:nrow(swiss_covid))) %>%
       filter(datum >= "2022-01-01") %>%
       ggplot() +
       geom_line(aes(x = datum, y = mod)) +
       geom_point(aes(x = datum, y = obs)) +
-      labs(title = "LOESS Modell", subtitle = paste("Span = ", optSpan, " Tage. Morgen: ", round(predValue)), 
+      labs(title = "LOESS Modell", subtitle = paste("Span = ", input$loessSpan, " Tage (Optimum bei ", optSpan, " Tagen). Morgen: ", round(predValue)), 
            x = "Datum", y = "log(Neuinfektionen) - deseasoned")
     
     return(loessPlot)

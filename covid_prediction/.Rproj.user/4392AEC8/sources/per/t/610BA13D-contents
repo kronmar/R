@@ -1,5 +1,6 @@
 source("supporting.r")
 library(ggplot2)
+library(np)
 
 swiss_covid <- load_data()
 
@@ -67,12 +68,18 @@ totMean <- swiss_covid %>%
 
 exp(modOut - totMean + dailyMean)
 
+# https://www.covid19.admin.ch/api/data/20220330-x7zv6jkb/sources/COVID19Cases_geoRegion.csv
 url <- get_url()
 data <- url %>%
   read.csv %>%
   filter(geoRegion == "CHFL")
 
-names(data)
-tail(data$sumTotal)
-tail(diff(data$sumTotal, lag=1))
-55+172+358+7153+9343+17
+
+npMod <- npreg(deseasoned ~index, data=swiss_covid)
+
+sqrt(mean((predict(npMod, data = swiss_covid)-swiss_covid$deseasoned)^2))
+
+
+data <- url %>%
+  read.csv
+data$entries_diff_last

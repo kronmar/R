@@ -31,8 +31,7 @@ ui <- navbarPage("Laborbestätigte Covidfälle Schweiz und Liechtenstein",
    tabPanel("Loess Modell",
     sidebarLayout(
      sidebarPanel(
-      sliderInput("loessSpan", "Mögliche Span für Loess Modell (in Anzahl Tagen)",
-                  min = 3, max = 60, value = c(7, 30)),
+      sliderInput("loessSpan", "Span für Loess Modell (in Anzahl Tagen)", min = 3, max = 60, value = 30),
       ),
      mainPanel(
         plotOutput("loessPlot")
